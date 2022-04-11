@@ -1,0 +1,171 @@
+### Тестирование формы авторизации
+GET http://localhost:8020/login?redirect=http://localhost:8020/program/administration
+
+### Тестирование формы администратора
+GET http://localhost:8020/program/administration
+
+### Логин
+POST http://localhost:8020/login
+Content-Type: application/x-www-form-urlencoded
+
+login=admin&password=admin
+
+### Регистрация новой программы
+POST http://localhost:8020/program/register
+Content-Type: application/json
+
+{
+    "name": "Новая программа",
+    "duration": "1.5 часа",
+    "discount": "Не требует подготовки"
+}
+
+> {%
+ client.test("Регистрация новой программы", function() {
+     client.assert(response.status === 201, "Был получен код '" + response.status + "', ожидалось 201.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+     client.assert(response.body.hasOwnProperty("id"), "Отсутствует id программы");
+     client.assert(response.body['registering_message'] === "Название: Новая программа. Время: 1.5 часа. Уровень подготовки: Не требует подготовки.",
+     "Сообщение о регистрации некорректно");
+     client.assert(response.body['status'] === "inStock", "Ожидался статус 'inStock'");
+ });
+ %}
+
+### Сравнение программы с эталоном
+PUT http://localhost:8020/program/1/movetoArchive
+
+> {%
+ client.test("Сравнение программы с эталоном", function() {
+     client.assert(response.status === 200, "Был получен код '" + response.status + "', ожидалось 200.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+     client.assert(response.body['id'] === 1, "id программы некорректен");
+     client.assert(response.body['archiving_message'] === "Название: Суставная гимнастика. Время: 1 час. Уровень подготовки: Не требует подготовки.",
+     "Сообщение об архивации некорректно");
+     client.assert(response.body['status'] === "archive", "Ожидался статус 'archive'");
+ });
+ %}
+
+### 3 Клиент может узнать уровень сложности программ: id_programme
+GET http://localhost:8020/program/1/
+
+> {%
+ client.test("Клиент может узнать уровень сложности программ: id_programme", function (){
+     client.assert(response.status === 200, "Ожидается код '200'. Был получен код '" + response.status + "'.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+     client.assert(response.body['id_programme'] === 1, "id программы некорректен");
+     client.assert(response.body['name'] === "Суставная гимнастика", "Наименование программы некорректно");
+     client.assert(response.body['duration'] === "1 час", "Длительность программы некорректен");
+     client.assert(response.body['discount'] === "Не требует подготовки", "Уровень подготовки программы некорректен");
+ });
+ %}
+
+### 3 Клиент может узнать уровень сложности программ: id_programme
+GET http://localhost:8020/program/0/
+
+> {%
+ client.test("Клиент может узнать уровень сложности программ: id_programme", function (){
+     client.assert(response.status === 404, "Ожидается код '404'. Был получен код '" + response.status + "'.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+     client.assert(response.body["message"] === "entity not found", "ОСообщение неорректно'. " +
+        "Было получено '" + response.body["message"] + "'.");
+     client.assert(response.body["status"] === "fail", "Некорректный статус'" +
+        response.body["status"] + "'.");
+ });
+ %}
+
+### 3 Клиент может узнать уровень сложности программ: id_programme
+GET http://localhost:8020/program?id_programme=1
+
+> {%
+ client.test("Клиент может узнать уровень сложности программ: id_programme", function (){
+     client.assert(response.status === 200, "Ожидается код '200'. Был получен код '" + response.status + "'.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+     client.assert(response.body.hasOwnProperty("length") && response.body.length === 1, "В ответе есть один элемент");
+     client.assert(response.body[0]['id_programme'] === 1, "id программы некорректен");
+     client.assert(response.body[0]['name'] === "Суставная гимнастика", "Наименование программы некорректно");
+     client.assert(response.body[0]['duration'] === "1 час", "Длительность программы некорректен");
+     client.assert(response.body[0]['discount'] === "Не требует подготовки", "Уровень подготовки программы некорректен");
+ });
+ %}
+
+### 3 Клиент может узнать уровень сложности программ: name
+GET http://localhost:8020/program?name=Суставная гимнастика
+
+> {%
+ client.test("Клиент может узнать уровень сложности программ: name", function (){
+     client.assert(response.status === 200, "Ожидается код '200'. Был получен код '" + response.status + "'.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+     client.assert(response.body.hasOwnProperty("length") && response.body.length === 1, "В ответе есть один элемент");
+     client.assert(response.body[0]['id_programme'] === 1, "id программы некорректен");
+     client.assert(response.body[0]['name'] === "Суставная гимнастика", "Наименование программы некорректно");
+     client.assert(response.body[0]['duration'] === "1 час", "Длительность программы некорректен");
+     client.assert(response.body[0]['discount'] === "Не требует подготовки", "Уровень подготовки программы некорректен");
+ });
+ %}
+
+### 3 Клиент может узнать уровень сложности программ: duration
+GET http://localhost:8020/program?duration=1 час
+
+> {%
+ client.test("Клиент может узнать уровень сложности программ: duration", function (){
+     client.assert(response.status === 200, "Ожидается код '200'. Был получен код '" + response.status + "'.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+     client.assert(response.body.hasOwnProperty("length") && response.body.length === 2, "В ответе есть один элемент");
+
+     client.assert(response.body[0]['id_programme'] === 4, "id программы некорректен");
+     client.assert(response.body[0]['name'] === "Йога", "Наименование программы некорректно");
+     client.assert(response.body[0]['duration'] === "1 час", "Длительность программы некорректен");
+     client.assert(response.body[0]['discount'] === "Не требует подготовки", "Уровень подготовки программы некорректен");
+
+     client.assert(response.body[1]['id_programme'] === 1, "id программы некорректен");
+     client.assert(response.body[1]['name'] === "Суставная гимнастика", "Наименование программы некорректно");
+     client.assert(response.body[1]['duration'] === "1 час", "Длительность программы некорректен");
+     client.assert(response.body[1]['discount'] === "Не требует подготовки", "Уровень подготовки программы некорректен");
+ });
+ %}
+
+### 3 Клиент может узнать уровень сложности программ: discount
+GET http://localhost:8020/program?discount=Требует подготовки
+
+> {%
+ client.test("Клиент может узнать уровень сложности программ: discount", function (){
+     client.assert(response.status === 200, "Ожидается код '200'. Был получен код '" + response.status + "'.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+     client.assert(response.body.hasOwnProperty("length") && response.body.length === 1, "В ответе есть один элемент");
+     client.assert(response.body[0]['id_programme'] === 3, "id программы некорректен");
+     client.assert(response.body[0]['name'] === "Работа с весом", "Наименование программы некорректно");
+     client.assert(response.body[0]['duration'] === "3 часа", "Длительность программы некорректен");
+     client.assert(response.body[0]['discount'] === "Требует подготовки", "Уровень подготовки программы некорректен");
+ });
+ %}
+
+### 3 Клиент может узнать уровень сложности программ: discount, duration
+GET http://localhost:8020/program?discount=Не требует подготовки&duration=2 часа
+
+> {%
+ client.test("Клиент может узнать уровень сложности программ: discount", function (){
+     client.assert(response.status === 200, "Ожидается код '200'. Был получен код '" + response.status + "'.");
+     client.assert(response.contentType.mimeType === "application/json", "Ожидаю application/type. Фактически: " +
+     response.contentType.mimeType);
+
+     client.assert(response.body.hasOwnProperty("length") && response.body.length === 2, "В ответе есть один элемент");
+
+     client.assert(response.body[0]['id_programme'] === 5, "id программы некорректен");
+     client.assert(response.body[0]['name'] === "Йога в гамаках", "Наименование программы некорректно");
+     client.assert(response.body[0]['duration'] === "2 часа", "Длительность программы некорректно");
+     client.assert(response.body[0]['discount'] === "Не требует подготовки", "Уровень подготовки программы некорректен");
+
+     client.assert(response.body[1]['id_programme'] === 2, "id программы некорректен");
+     client.assert(response.body[1]['name'] === "Аэробика", "Наименование программы некорректно");
+     client.assert(response.body[1]['duration'] === "2 часа", "Длительность программы некорректно");
+     client.assert(response.body[1]['discount'] === "Не требует подготовки", "Уровень подготовки программы некорректен");
+ });
+ %}
