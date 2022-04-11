@@ -13,7 +13,6 @@ use EfTech\SportClub\Service\SearchPassService\SearchPassCriteria;
  */
 class SearchPassService
 {
-
     /**
      * Логер
      *
@@ -28,10 +27,9 @@ class SearchPassService
      */
     private PassRepositoryInterface $passRepository;
 
-
     /**
      * @param LoggerInterface         $logger         - логер
-     * @param PassRepositoryInterface $passRepository
+     * @param PassRepositoryInterface $passRepository - репозиторий для работы с абонементами
      */
     public function __construct(
         LoggerInterface $logger,
@@ -39,9 +37,7 @@ class SearchPassService
     ) {
         $this->logger         = $logger;
         $this->passRepository = $passRepository;
-
-    }//end __construct()
-
+    }
 
     /**
      * Поиск сущности по заданным критериям
@@ -57,12 +53,9 @@ class SearchPassService
         foreach ($entitiesCollection as $entity) {
             $dtoCollection[] = $this->createDto($entity);
         }
-
         $this->logger->info('found passes: '.count($entitiesCollection));
         return $dtoCollection;
-
-    }//end search()
-
+    }
 
     private function searchCriteriaToArray(SearchPassCriteria $searchCriteria): array
     {
@@ -83,9 +76,7 @@ class SearchPassService
                 return null !== $item;
             }
         );
-
-    }//end searchCriteriaToArray()
-
+    }
 
     private function createDto(Pass $pass): PassDto
     {
@@ -95,8 +86,5 @@ class SearchPassService
             $pass->getDiscount(),
             $pass->getCustomer()->getId(),
         );
-
-    }//end createDto()
-
-
-}//end class
+    }
+}

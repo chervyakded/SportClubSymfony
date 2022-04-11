@@ -7,8 +7,12 @@ use Doctrine\ORM\Mapping AS ORM;
 /**
  * Пользователь системы
  *
- * @ORM\Entity()
- * @ORM\Table(name="users")
+ * @ORM\Entity(repositoryClass=\EfTech\SportClub\Repository\UserDoctrineRepository::class)
+ * @ORM\Table(name="users",
+ *     uniqueConstraints={
+ *         @ORM\UniqueConstraint(name="users_login_unq", columns={"login"})
+ *     }
+ * )
  */
 class User
 {

@@ -5,7 +5,6 @@ namespace EfTech\SportClub\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use EfTech\SportClub\Entity\Customer;
-use EfTech\SportClub\Entity\PurchasedItem;
 use EfTech\SportClub\Entity\CustomerRepositoryInterface;
 
 class CustomerDoctrineRepository extends EntityRepository implements CustomerRepositoryInterface

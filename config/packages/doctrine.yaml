@@ -10,11 +10,12 @@ doctrine:
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         auto_mapping: true
         mappings:
-            App:
-                is_bundle: false
+            SportClubEntity:
                 dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
-                alias: App
+                prefix: 'EfTech\SportClub\Entity'
+            SportClubValueObject:
+                dir: '%kernel.project_dir%/src/ValueObject'
+                prefix: 'EfTech\SportClub\ValueObject'
 
 when@test:
     doctrine:

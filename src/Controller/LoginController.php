@@ -11,7 +11,7 @@ use Throwable;
 /**
  * Класс обработки авторизации
  */
-final class LoginController extends AbstractController
+class LoginController extends AbstractController
 {
     /**
      * @param Request $serverRequest

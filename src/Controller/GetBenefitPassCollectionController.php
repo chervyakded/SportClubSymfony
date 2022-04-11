@@ -9,10 +9,17 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class GetBenefitPassCollectionController extends AbstractController
 {
+    /**
+     * Сервис валидации
+     * @var ValidatorInterface
+     */
+    private ValidatorInterface $validator;
+
     /**
      * Логер
      *
@@ -27,51 +34,114 @@ class GetBenefitPassCollectionController extends AbstractController
     private SearchBenefitPassService $searchBenefitPassService;
 
     /**
-     * @param LoggerInterface $logger - логер
+     * @param ValidatorInterface       $validator                - сервис валидации
+     * @param LoggerInterface          $logger                   - логер
      * @param SearchBenefitPassService $searchBenefitPassService - сервис поиска льгот
      */
     public function __construct(
+        ValidatorInterface       $validator,
         LoggerInterface          $logger,
         SearchBenefitPassService $searchBenefitPassService
     ) {
-        $this->logger = $logger;
+        $this->validator                = $validator;
+        $this->logger                   = $logger;
         $this->searchBenefitPassService = $searchBenefitPassService;
     }
 
-//    /**
-//     * Валидирует параметры запроса
-//     *
-//     * @param Request $serverRequest - объект серверного http запроса
-//     * @return string|null - строка с ошибкой или null если ошибки нет
-//     */
-//    private function validateQueryParams(Request $serverRequest): ?string
-//    {
-//        $paramsValidation = [
-//            'customer_id' => 'incorrect param "customer_id"',
-//            'full_name' => 'incorrect param "full_name"',
-//            'sex' => 'incorrect param "sex"',
-//            'birthdate' => 'incorrect param "birthdate"',
-//            'phone' => 'incorrect param "phone"',
-//            'passport' => 'incorrect param "passport"',
-//            'type_benefit' => 'incorrect param "type_benefit"',
-//            'number_document' => 'incorrect param "number_document"',
-//            'end' => 'incorrect param "end"',
-//        ];
-//        $queryParams = array_merge($serverRequest->getQueryParams(), $serverRequest->getAttributes());
-//        return Assert::arrayElementsIsString($paramsValidation, $queryParams);
-//    }
+    /**
+     * Валидирует параметры запроса
+     *
+     * @param Request $serverRequest - объект серверного http запроса
+     * @return string|null - строка с ошибкой или null если ошибки нет
+     * @throws \Exception
+     */
+    private function validateQueryParams(Request $serverRequest): ?string
+    {
+        $params = array_merge($serverRequest->attributes->all(), $serverRequest->query->all());
+        $constraint = new Assert\Collection([
+            'allowExtraFields' => true,
+            'allowMissingFields' => false,
+            'missingFieldsMessage' => 'Отсутствует обязательное поле: {{ field }}',
+            'fields' => [
+                'customer_id' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer id'
+                    ])
+                ]),
+                'full_name' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer full name'
+                    ])
+                ]),
+                'sex' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer sex'
+                    ])
+                ]),
+                'birthdate' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer birthdate'
+                    ])
+                ]),
+                'phone' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer phone'
+                    ])
+                ]),
+                'passport' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer passport'
+                    ])
+                ]),
+                'type_benefit' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect type benefit'
+                    ])
+                ]),
+                'number_document' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect number document'
+                    ])
+                ]),
+                'end' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect end of benefit pass'
+                    ])
+                ]),
+            ]
+        ]);
+        $errors = $this->validator->validate($params, $constraint);
+        $errStrCollection = array_map(
+            static function ($v) {
+                return $v->getMessage();
+            },
+            $errors->getIterator()->getArrayCopy()
+        );
+        return count($errStrCollection) > 0
+            ? implode(',', $errStrCollection)
+            : null;
+    }
 
     /**
      * Реализация поиска льгот по критериям
      *
      * @param Request $serverRequest - серверный объект запроса
      * @return Response - объект http ответа
+     * @throws \Exception
      */
     public function __invoke(Request $serverRequest): Response
     {
         $this->logger->info('dispatch "benefit_pass" url');
-//        $resultParamValidation = $this->validateQueryParams($serverRequest);
-        $resultParamValidation = null;
+        $resultParamValidation = $this->validateQueryParams($serverRequest);
         if (null === $resultParamValidation) {
             $params = array_merge(
                 $serverRequest->query->all(),

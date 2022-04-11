@@ -1,17 +1,17 @@
 ### Тестирование формы авторизации
-GET http://localhost:8020/login?redirect=http://localhost:8020/program/administration
+GET http://localhost:8050/login?redirect=http://localhost:8050/program/administration
 
 ### Тестирование формы администратора
-GET http://localhost:8020/program/administration
+GET http://localhost:8050/program/administration
 
 ### Логин
-POST http://localhost:8020/login
+POST http://localhost:8050/login
 Content-Type: application/x-www-form-urlencoded
 
 login=admin&password=admin
 
 ### Регистрация новой программы
-POST http://localhost:8020/program/register
+POST http://localhost:8050/program/register
 Content-Type: application/json
 
 {
@@ -33,7 +33,7 @@ Content-Type: application/json
  %}
 
 ### Сравнение программы с эталоном
-PUT http://localhost:8020/program/1/movetoArchive
+PUT http://localhost:8050/program/1/movetoArchive
 
 > {%
  client.test("Сравнение программы с эталоном", function() {
@@ -48,7 +48,7 @@ PUT http://localhost:8020/program/1/movetoArchive
  %}
 
 ### 3 Клиент может узнать уровень сложности программ: id_programme
-GET http://localhost:8020/program/1/
+GET http://localhost:8050/program/1/
 
 > {%
  client.test("Клиент может узнать уровень сложности программ: id_programme", function (){
@@ -63,7 +63,7 @@ GET http://localhost:8020/program/1/
  %}
 
 ### 3 Клиент может узнать уровень сложности программ: id_programme
-GET http://localhost:8020/program/0/
+GET http://localhost:8050/program/0/
 
 > {%
  client.test("Клиент может узнать уровень сложности программ: id_programme", function (){
@@ -78,7 +78,7 @@ GET http://localhost:8020/program/0/
  %}
 
 ### 3 Клиент может узнать уровень сложности программ: id_programme
-GET http://localhost:8020/program?id_programme=1
+GET http://localhost:8050/program?id_programme=1
 
 > {%
  client.test("Клиент может узнать уровень сложности программ: id_programme", function (){
@@ -94,7 +94,7 @@ GET http://localhost:8020/program?id_programme=1
  %}
 
 ### 3 Клиент может узнать уровень сложности программ: name
-GET http://localhost:8020/program?name=Суставная гимнастика
+GET http://localhost:8050/program?name=Суставная гимнастика
 
 > {%
  client.test("Клиент может узнать уровень сложности программ: name", function (){
@@ -110,7 +110,7 @@ GET http://localhost:8020/program?name=Суставная гимнастика
  %}
 
 ### 3 Клиент может узнать уровень сложности программ: duration
-GET http://localhost:8020/program?duration=1 час
+GET http://localhost:8050/program?duration=1 час
 
 > {%
  client.test("Клиент может узнать уровень сложности программ: duration", function (){
@@ -132,7 +132,7 @@ GET http://localhost:8020/program?duration=1 час
  %}
 
 ### 3 Клиент может узнать уровень сложности программ: discount
-GET http://localhost:8020/program?discount=Требует подготовки
+GET http://localhost:8050/program?discount=Требует подготовки
 
 > {%
  client.test("Клиент может узнать уровень сложности программ: discount", function (){
@@ -148,7 +148,7 @@ GET http://localhost:8020/program?discount=Требует подготовки
  %}
 
 ### 3 Клиент может узнать уровень сложности программ: discount, duration
-GET http://localhost:8020/program?discount=Не требует подготовки&duration=2 часа
+GET http://localhost:8050/program?discount=Не требует подготовки&duration=2 часа
 
 > {%
  client.test("Клиент может узнать уровень сложности программ: discount", function (){

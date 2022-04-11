@@ -11,9 +11,17 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class CreateRegisterProgramController extends AbstractController
 {
+    /**
+     * Сервис валидации
+     * @var ValidatorInterface
+     */
+    private ValidatorInterface $validator;
+
     /**
      * Сервис для регистрации новых программ
      *
@@ -28,13 +36,17 @@ class CreateRegisterProgramController extends AbstractController
     private EntityManagerInterface $em;
 
     /**
+     * @param ValidatorInterface $validator - сервис валидации
      * @param ArrivalNewProgramService $arrivalNewProgramService - сервис для регистрации новых программ
      * @param EntityManagerInterface $em - менеджер сущностей
      */
     public function __construct(
+        ValidatorInterface       $validator,
         ArrivalNewProgramService $arrivalNewProgramService,
         EntityManagerInterface   $em
-    ) {
+    )
+    {
+        $this->validator = $validator;
         $this->arrivalNewProgramService = $arrivalNewProgramService;
         $this->em = $em;
     }
@@ -81,38 +93,77 @@ class CreateRegisterProgramController extends AbstractController
      *
      * @param  $requestData
      * @return array
+     * @throws \Exception
      */
     private function validateData($requestData): array
     {
-        $err = [];
-        if (false === is_array($requestData)) {
-            $err[] = 'Данные о новой программе не являются массивом';
-        } else {
-            if (false === array_key_exists('name', $requestData)) {
-                $err[] = 'Отсутствует информация о названии программы';
-            } elseif (false === is_string($requestData['name'])) {
-                $err[] = 'Название программы должно быть строкой';
-            } elseif ('' === trim($requestData['name'])) {
-                $err[] = 'Название программы не может быть пустой строкой';
-            }
-
-            if (false === array_key_exists('duration', $requestData)) {
-                $err[] = 'Отсутствует информация о длительности программы';
-            } elseif (false === is_string($requestData['duration'])) {
-                $err[] = 'Длительность программы должна быть строкой';
-            } elseif ('' === trim($requestData['duration'])) {
-                $err[] = 'Длительность программы не может быть пустой строкой';
-            }
-
-            if (false === array_key_exists('discount', $requestData)) {
-                $err[] = 'Отсутствует информация об уровне подготовки';
-            } elseif (false === is_string($requestData['discount'])) {
-                $err[] = 'Уровень подготовки программы должен быть строкой';
-            } elseif ('' === trim($requestData['discount'])) {
-                $err[] = 'Уровень подготовки программы не может быть пустой строкой';
-            }
-        }
-        return $err;
+        $constraint = [
+            new Assert\Type([
+                'type' => 'array',
+                'message' => 'Данные о новой программе не является массивом'
+            ]),
+            new Assert\Collection([
+                'allowExtraFields' => false,
+                'allowMissingFields' => false,
+                'extraFieldsMessage' => 'Есть лишнее поле: {{ field }}',
+                'missingFieldsMessage' => 'Отсутствует обязательное поле: {{ field }}',
+                'fields' => [
+                    'name' => [
+                        new Assert\Type([
+                            'type' => 'string',
+                            'message' => 'Имя новой программы не является строкой'
+                        ]),
+                        new Assert\NotBlank([
+                            'message' => 'Имя программы не может быть пустой строкой',
+                            'normalizer' => 'trim'
+                        ]),
+                        new Assert\Length([
+                            'min' => 1,
+                            'max' => 100,
+                            'minMessage' => 'Некорректная длина имени программы. Необходимо минимум {{ limit }} символов',
+                            'maxMessage' => 'Некорректная длина имени программы. Необходимо максимум {{ limit }} символов'
+                        ])
+                    ],
+                    'duration' => [
+                        new Assert\Type([
+                            'type' => 'string',
+                            'message' => 'Длительность новой программы не является строкой'
+                        ]),
+                        new Assert\NotBlank([
+                            'message' => 'Длительность программы не может быть пустой строкой',
+                            'normalizer' => 'trim'
+                        ]),
+                        new Assert\Length([
+                            'min' => 1,
+                            'max' => 25,
+                            'minMessage' => 'Некорректная длина длительности программы. Необходимо минимум {{ limit }} символов',
+                            'maxMessage' => 'Некорректная длина длительности книпрограммыги. Необходимо максимум {{ limit }} символов'
+                        ])
+                    ],
+                    'discount' => [
+                        new Assert\Type([
+                            'type' => 'string',
+                            'message' => 'Уровень подготовки новой программы не является строкой'
+                        ]),
+                        new Assert\NotBlank([
+                            'message' => 'Уровень подготовки программы не может быть пустой строкой',
+                            'normalizer' => 'trim'
+                        ]),
+                        new Assert\Length([
+                            'min' => 1,
+                            'max' => 50,
+                            'minMessage' => 'Некорректная длина уровня подготовки программы. Необходимо минимум {{ limit }} символов',
+                            'maxMessage' => 'Некорректная длина уровня подготовки книпрограммыги. Необходимо максимум {{ limit }} символов'
+                        ])
+                    ],
+                ]
+            ])
+        ];
+        $errors = $this->validator->validate($requestData, $constraint);
+        return array_map(
+            static function($v){return $v->getMessage();},
+            $errors->getIterator()->getArrayCopy()
+        );
     }
 
     /**

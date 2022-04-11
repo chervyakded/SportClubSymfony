@@ -2,7 +2,67 @@
 #    path: /
 #    controller: App\Controller\DefaultController::index
 
+benefit_pass_id:
+  path: /benefit_pass/{pass_id}
+  controller: EfTech\SportClub\Controller\GetBenefitPassController::__invoke
+  methods: GET
+  requirements:
+    pass_id: '\d+'
+
+benefit_pass:
+  path: /benefit_pass
+  controller: EfTech\SportClub\Controller\GetBenefitPassCollectionController::__invoke
+  methods: GET
+
+pass_id:
+  path: /pass/{pass_id}
+  controller: EfTech\SportClub\Controller\GetPassController::__invoke
+  methods: GET
+  requirements:
+    pass_id: '\d+'
+
+pass:
+  path: /pass
+  controller: EfTech\SportClub\Controller\GetPassCollectionController::__invoke
+  methods: GET
+
+program_id:
+  path: /program/{id_programme}
+  controller: EfTech\SportClub\Controller\GetProgramController::__invoke
+  methods: GET
+  requirements:
+    id_programme: '\d+'
+
+program:
+  path: /program
+  controller: EfTech\SportClub\Controller\GetProgramCollectionController::__invoke
+  methods: GET
+
+purchased_item_id:
+  path: /purchased_items/{customer_id}
+  controller: EfTech\SportClub\Controller\GetPurchasedItemsController::__invoke
+  methods: GET
+  requirements:
+    customer_id: '\d+'
+
+purchased_items:
+  path: /purchased_items
+  controller: EfTech\SportClub\Controller\GetPurchasedItemsCollectionController::__invoke
+  methods: GET
+
+program_move_to_archive:
+  path: /program/{id_programme}/moveToArchive
+  controller: EfTech\SportClub\Controller\UpdateMovetoArchiveProgramController::__invoke
+  methods: PUT
+  requirements:
+    id_programme: '\d+'
+
 login:
   path: /login
   controller: EfTech\SportClub\Controller\LoginController::__invoke
+  methods: [POST, GET]
+
+program_administration:
+  path: /program/administration
+  controller: EfTech\SportClub\Controller\ProgramAdministrationController::__invoke
   methods: [POST, GET]

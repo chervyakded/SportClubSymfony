@@ -10,9 +10,17 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class GetPurchasedItemsCollectionController extends AbstractController
 {
+    /**
+     * Сервис валидации
+     * @var ValidatorInterface
+     */
+    private ValidatorInterface $validator;
+
     /**
      * Логер
      * @var LoggerInterface
@@ -26,54 +34,132 @@ class GetPurchasedItemsCollectionController extends AbstractController
     private SearchPurchaseItemService $searchPurchaseItemService;
 
     /**
+     * @param ValidatorInterface        $validator                 - сервис валидации
      * @param LoggerInterface           $logger                    - логер
      * @param SearchPurchaseItemService $searchPurchaseItemService - сервис поиска продуктов
      */
     public function __construct(
+        ValidatorInterface        $validator,
         LoggerInterface           $logger,
         SearchPurchaseItemService $searchPurchaseItemService
     ) {
+        $this->validator                 = $validator;
         $this->logger                    = $logger;
         $this->searchPurchaseItemService = $searchPurchaseItemService;
     }
 
-//    /**
-//     * Валидирует параметры запроса
-//     *
-//     * @param Request $serverRequest - объект серверного http запроса
-//     * @return string|null - строка с ошибкой или null если ошибки нет
-//     */
-//    private function validateQueryParams(Request $serverRequest): ?string
-//    {
-//        $paramsValidation = [
-//            'id' => 'incorrect param "id"',
-//            'customer_id' => 'incorrect customer_id',
-//            'customer_full_name' => 'incorrect customer_full_name',
-//            'customer_sex' => 'incorrect customer_sex',
-//            'customer_birthdate' => 'incorrect customer_birthdate',
-//            'customer_phone' => 'incorrect customer_phone',
-//            'customer_passport' => 'incorrect customer_passport',
-//            'price' => 'incorrect price',
-//            'currency' => 'incorrect currency',
-//            'purchased_item_id' => 'incorrect purchased_item_id',
-//            'pass_id' => 'incorrect pass_id',
-//            'id_programme' => 'incorrect id_programme',
-//        ];
-//        $queryParams = array_merge($serverRequest->getQueryParams(), $serverRequest->getAttributes());
-//        return Assert::arrayElementsIsString($paramsValidation, $queryParams);
-//    }
+    /**
+     * Валидирует параметры запроса
+     *
+     * @param Request $serverRequest - объект серверного http запроса
+     * @return string|null - строка с ошибкой или null если ошибки нет
+     * @throws \Exception
+     */
+    private function validateQueryParams(Request $serverRequest): ?string
+    {
+        $params = array_merge($serverRequest->attributes->all(), $serverRequest->query->all());
+        $constraint = new Assert\Collection([
+            'allowExtraFields' => true,
+            'allowMissingFields' => false,
+            'missingFieldsMessage' => 'Отсутствует обязательное поле: {{ field }}',
+            'fields' => [
+                'id' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect id'
+                    ])
+                ]),
+                'customer_id' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer id'
+                    ])
+                ]),
+                'customer_full_name' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer full name'
+                    ])
+                ]),
+                'customer_sex' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer sex'
+                    ])
+                ]),
+                'customer_birthdate' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer birthdate'
+                    ])
+                ]),
+                'customer_phone' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer phone'
+                    ])
+                ]),
+                'customer_passport' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer passport'
+                    ])
+                ]),
+                'price' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect price'
+                    ])
+                ]),
+                'currency' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect currency'
+                    ])
+                ]),
+                'purchased_item_id' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect purchased item id'
+                    ])
+                ]),
+                'pass_id' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect pass id'
+                    ])
+                ]),
+                'id_programme' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect id programme'
+                    ])
+                ]),
+            ]
+        ]);
+        $errors = $this->validator->validate($params, $constraint);
+        $errStrCollection = array_map(
+            static function ($v) {
+                return $v->getMessage();
+            },
+            $errors->getIterator()->getArrayCopy()
+        );
+        return count($errStrCollection) > 0
+            ? implode(',', $errStrCollection)
+            : null;
+    }
 
     /**
      * Реализация поиска продуктов по критериям
      *
      * @param Request $serverRequest - серверный объект запроса
      * @return Response - объект http ответа
+     * @throws \Exception
      */
     public function __invoke(Request $serverRequest): Response
     {
         $this->logger->info('dispatch "purchased_items" url');
-//        $resultParamValidation = $this->validateQueryParams($serverRequest);
-        $resultParamValidation = null;
+        $resultParamValidation = $this->validateQueryParams($serverRequest);
         if (null === $resultParamValidation) {
             $params = array_merge(
                 $serverRequest->query->all(),

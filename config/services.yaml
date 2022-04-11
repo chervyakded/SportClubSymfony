@@ -38,12 +38,16 @@ services:
     EfTech\SportClub\Entity\CustomerRepositoryInterface:
         factory: ['@Doctrine\ORM\EntityManagerInterface', 'getRepository']
         arguments:
-            $entityName: EfTech\SportClub\Entity\Customer
+            $entityName: EfTech\SportClub\Entity\PurchasedItem
 
     EfTech\SportClub\Entity\UserRepositoryInterface:
         factory: ['@Doctrine\ORM\EntityManagerInterface', 'getRepository']
         arguments:
-            $entityName: EfTech\SportClub\Entity\UserRepository\UserDataProvider
+            $entityName: EfTech\SportClub\Entity\User
+
+    EfTech\SportClub\DoctrineEventSubscriber\EntityEventSubscriber:
+        tags:
+            - name: 'doctrine.event_subscriber'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

@@ -4,18 +4,17 @@ namespace EfTech\SportClub\Repository;
 
 use EfTech\SportClub\Entity\UserRepositoryInterface;
 use EfTech\SportClub\Exception\RuntimeException;
-use EfTech\SportClub\Infrastructure\Auth\UserDataStorageInterface;
 use Doctrine\ORM\EntityRepository;
-use EfTech\SportClub\Repository\UserRepository\UserDataProvider;
+use EfTech\SportClub\Entity\User;
 
-class UserDoctrineRepository extends EntityRepository implements UserDataStorageInterface, UserRepositoryInterface
+class UserDoctrineRepository extends EntityRepository implements UserRepositoryInterface
 {
     /**
      * @param array $criteria
      * @param array|null $orderBy
      * @param $limit
      * @param $offset
-     * @return UserDataProvider[]
+     * @return User[]
      */
     public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
     {
@@ -25,7 +24,7 @@ class UserDoctrineRepository extends EntityRepository implements UserDataStorage
     /**
      * @inheritDoc
      */
-    public function findUserByLogin(string $login): ?UserDataProvider
+    public function findUserByLogin(string $login): ?User
     {
         $entities = $this->findBy(['login' => $login]);
         $countEntities = count($entities);

@@ -2,9 +2,7 @@
 
 namespace EfTech\SportClub\Service;
 
-use DateTimeImmutable;
 use EfTech\SportClub\Entity\Customer;
-use EfTech\SportClub\Entity\PurchasedItem;
 use EfTech\SportClub\Entity\CustomerRepositoryInterface;
 use Psr\Log\LoggerInterface;
 use EfTech\SportClub\Service\SearchPurchaseItemService\CustomerDto;
@@ -16,7 +14,6 @@ use EfTech\SportClub\Service\SearchPurchaseItemService\SearchPurchasedItemCriter
  */
 class SearchPurchaseItemService
 {
-
     /**
      * Логер
      *
@@ -30,7 +27,6 @@ class SearchPurchaseItemService
      * @var CustomerRepositoryInterface
      */
     private CustomerRepositoryInterface $customerRepository;
-
 
     /**
      * @param LoggerInterface $logger - логер
@@ -52,12 +48,9 @@ class SearchPurchaseItemService
         foreach ($entitiesCollection as $entity) {
             $dtoCollection[] = $this->createDto($entity);
         }
-
         $this->logger->info('found purchased items: ' . count($entitiesCollection));
         return $dtoCollection;
-
-    }//end search()
-
+    }
 
     private function searchCriteriaToArray(SearchPurchasedItemCriteria $searchCriteria): array
     {
@@ -79,9 +72,7 @@ class SearchPurchaseItemService
                 return null !== $item;
             }
         );
-
-    }//end searchCriteriaToArray()
-
+    }
 
     /**
      * @param Customer $customer
@@ -108,8 +99,5 @@ class SearchPurchaseItemService
             $customer->getPassport(),
             $purchasedItemDto
         );
-
-    }//end createDto()
-
-
-}//end class
+    }
+}

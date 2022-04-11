@@ -9,9 +9,17 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class GetPassCollectionController extends AbstractController
 {
+    /**
+     * Сервис валидации
+     * @var ValidatorInterface
+     */
+    private ValidatorInterface $validator;
+
     /**
      * Логер
      *
@@ -27,46 +35,84 @@ class GetPassCollectionController extends AbstractController
     private SearchPassService $searchPassService;
 
     /**
-     * @param LoggerInterface       $logger                - логер
-     * @param SearchPassService     $searchPassService     - путь до файла с данными об абонементах
+     * @param ValidatorInterface $validator         - сервис валидации
+     * @param LoggerInterface    $logger            - логер
+     * @param SearchPassService  $searchPassService - путь до файла с данными об абонементах
      */
     public function __construct(
-        LoggerInterface $logger,
-        SearchPassService $searchPassService
+        ValidatorInterface $validator,
+        LoggerInterface    $logger,
+        SearchPassService  $searchPassService
     ) {
-        $this->logger                = $logger;
-        $this->searchPassService     = $searchPassService;
+        $this->validator         = $validator;
+        $this->logger            = $logger;
+        $this->searchPassService = $searchPassService;
     }
 
-//    /**
-//     * Валидирует параметры запроса
-//     *
-//     * @param  Request $serverRequest - объект серверного http запроса
-//     * @return string|null - строка с ошибкой или null если ошибки нет
-//     */
-//    private function validateQueryParams(Request $serverRequest): ?string
-//    {
-//        $paramsValidation = [
-//            'pass_id'     => 'incorrect param "pass_id"',
-//            'duration'    => 'incorrect param "duration"',
-//            'discount'    => 'incorrect param "discount"',
-//            'customer_id' => 'incorrect param "customer_id"',
-//        ];
-//        $queryParams      = array_merge($serverRequest->getQueryParams(), $serverRequest->getAttributes());
-//        return Assert::arrayElementsIsString($paramsValidation, $queryParams);
-//    }
+    /**
+     * Валидирует параметры запроса
+     *
+     * @param  Request $serverRequest - объект серверного http запроса
+     * @return string|null - строка с ошибкой или null если ошибки нет
+     * @throws \Exception
+     */
+    private function validateQueryParams(Request $serverRequest): ?string
+    {
+        $params = array_merge($serverRequest->attributes->all(), $serverRequest->query->all());
+        $constraint = new Assert\Collection([
+            'allowExtraFields' => true,
+            'allowMissingFields' => false,
+            'missingFieldsMessage' => 'Отсутствует обязательное поле: {{ field }}',
+            'fields' => [
+                'pass_id' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect pass id'
+                    ])
+                ]),
+                'duration' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect duration'
+                    ])
+                ]),
+                'discount' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect discount'
+                    ])
+                ]),
+                'customer_id' => new Assert\Optional([
+                    new Assert\Type([
+                        'type' => 'string',
+                        'message' => 'incorrect customer id'
+                    ])
+                ]),
+            ]
+        ]);
+        $errors = $this->validator->validate($params, $constraint);
+        $errStrCollection = array_map(
+            static function ($v) {
+                return $v->getMessage();
+            },
+            $errors->getIterator()->getArrayCopy()
+        );
+        return count($errStrCollection) > 0
+            ? implode(',', $errStrCollection)
+            : null;
+    }
 
     /**
      * Реализация поиска абонементов по критериям
      *
      * @param  Request $serverRequest - серверный объект запроса
      * @return Response - объект http ответа
+     * @throws \Exception
      */
     public function __invoke(Request $serverRequest): Response
     {
         $this->logger->info('dispatch "pass" url');
-//        $resultParamValidation = $this->validateQueryParams($serverRequest);
-        $resultParamValidation = null;
+        $resultParamValidation = $this->validateQueryParams($serverRequest);
         if (null === $resultParamValidation) {
             $params    = array_merge(
                 $serverRequest->query->all(),
@@ -84,8 +130,8 @@ class GetPassCollectionController extends AbstractController
                     ->setCustomerPhone($params['customer_phone'] ?? null)
                     ->setCustomerPassport($params['customer_passport'] ?? null)
             );
-            $httpCode  = $this->buildHttpCode($foundPass);
-            $result    = $this->buildResult($foundPass);
+            $httpCode = $this->buildHttpCode($foundPass);
+            $result   = $this->buildResult($foundPass);
         } else {
             $httpCode = 500;
             $result   = [
