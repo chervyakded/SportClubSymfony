@@ -1,15 +1,17 @@
-<style>
-    form label {
-        width: 100pt;
-        display: block;
-    }
-</style>
+<html>
+<head>
+    <meta charset="UTF-8">
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+</head>
+<body>
 <h1>Admin Page</h1>
-<div>
+<div class="col-3">
     <h2>Добавить программу</h2>
     {{ form(form_program) }}
 </div>
-<table>
+<table class="table table-bordered table-striped table-hover">
     <thead>
     <tr>
         <th>№</th>
@@ -19,7 +21,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for program in programs %}
+    {% for program in programmes %}
         <tr>
             <td>{{ loop.index }}<?php echo $index ?></td>
             <td>{{ program.getName() }}</td>
@@ -29,3 +31,9 @@
     {% endfor %}
     </tbody>
 </table>
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('app') }}
+{% endblock %}
+</body>
+</html>

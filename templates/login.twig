@@ -1,7 +1,21 @@
-<h1>Аутентификация</h1>
-<div>
+<html>
+<head>
+    <meta charset="UTF-8">
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+</head>
+<body>
+
+<h2>Аутентификация</h2>
+<div class="col-3">
     {{ form(form_login) }}
+    {% if errs %}
+        <div>
+            {{ errs.messageKey|trans(errs.messageData, 'security') }}
+        </div>
+    {% endif %}
 </div>
-{% if errMsg is defined %}
-    {{ errMsg }}
-{% endif %}
+
+</body>
+</html>
