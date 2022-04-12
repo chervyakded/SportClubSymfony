@@ -51,7 +51,7 @@ purchased_items:
   methods: GET
 
 program_move_to_archive:
-  path: /program/{id_programme}/moveToArchive
+  path: /program/{id_programme}/movetoArchive
   controller: EfTech\SportClub\Controller\UpdateMovetoArchiveProgramController::__invoke
   methods: PUT
   requirements:

@@ -7,13 +7,12 @@ namespace EfTech\SportClub\Service\ArchiveProgramService;
  */
 final class ArchivingResultDto
 {
-
     /**
      * id программы
      *
      * @var integer
      */
-    private int $programId;
+    private int $id;
 
     /**
      * Сообщение об архивации
@@ -29,33 +28,28 @@ final class ArchivingResultDto
      */
     private string $status;
 
-
     /**
-     * @param integer $programId
+     * @param integer $id
      * @param string  $archivingMessage
      * @param string  $status
      */
     public function __construct(
-        int $programId,
+        int    $id,
         string $archivingMessage,
         string $status
     ) {
-        $this->programId        = $programId;
+        $this->id               = $id;
         $this->archivingMessage = $archivingMessage;
         $this->status           = $status;
-
-    }//end __construct()
-
+    }
 
     /**
      * @return integer
      */
     public function getId(): int
     {
-        return $this->programId;
-
-    }//end getId()
-
+        return $this->id;
+    }
 
     /**
      * @return string
@@ -63,9 +57,7 @@ final class ArchivingResultDto
     public function getArchivingMessage(): string
     {
         return $this->archivingMessage;
-
-    }//end getArchivingMessage()
-
+    }
 
     /**
      * @return string
@@ -73,8 +65,5 @@ final class ArchivingResultDto
     public function getStatus(): string
     {
         return $this->status;
-
-    }//end getStatus()
-
-
-}//end class
+    }
+}

@@ -23,6 +23,7 @@ class UpdateMovetoArchiveProgramController extends AbstractController
 
     /**
      * Менеджер сущностей
+     *
      * @var EntityManagerInterface
      */
     private EntityManagerInterface $em;
@@ -36,7 +37,7 @@ class UpdateMovetoArchiveProgramController extends AbstractController
         EntityManagerInterface  $em
     ) {
         $this->archivingProgramService = $archivingProgramService;
-        $this->em = $em;
+        $this->em                      = $em;
     }
 
     /**
@@ -54,13 +55,17 @@ class UpdateMovetoArchiveProgramController extends AbstractController
             $resultDto = $this->archivingProgramService->archive((int) $attributes['id_programme']);
             $httpCode = 200;
             $jsonData = $this->buildJsonData($resultDto);
+            $this->em->flush();
+            $this->em->commit();
         } catch (ProgramNotFoundException $e) {
+            $this->em->rollBack();
             $httpCode = 404;
             $jsonData = [
                 'status'  => 'fail',
                 'message' => $e->getMessage(),
             ];
         } catch (Throwable $e) {
+            $this->em->rollBack();
             $httpCode = 500;
             $jsonData = [
                 'status'  => 'fail',

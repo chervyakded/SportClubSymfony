@@ -57,12 +57,9 @@ class SearchProgrammeService
         foreach ($entitiesCollection as $entity) {
             $dtoCollection[] = $this->createDto($entity);
         }
-
         $this->logger->info('found programmes: '.count($entitiesCollection));
         return $dtoCollection;
-
-    }//end search()
-
+    }
 
     private function searchCriteriaToArray(SearchProgrammeCriteria $searchCriteria): array
     {

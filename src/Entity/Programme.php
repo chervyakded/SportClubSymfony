@@ -3,7 +3,6 @@
 namespace EfTech\SportClub\Entity;
 
 use EfTech\SportClub\Entity\Program\Status;
-use EfTech\SportClub\Exception\InvalidDataStructureException;
 use EfTech\SportClub\Exception\RuntimeException;
 use JsonSerializable;
 use Doctrine\ORM\Mapping as ORM;
@@ -65,13 +64,16 @@ class Programme implements JsonSerializable
     /**
      * Статус программы
      *
-     * @ORM\ManyToOne(targetEntity=\EfTech\SportClub\Entity\Program\Status::class)
+     * @ORM\ManyToOne(
+     *     targetEntity=\EfTech\SportClub\Entity\Program\Status::class,
+     *     cascade={"persist"},
+     *     fetch="EAGER"
+     * )
      * @ORM\JoinColumn(name="status_id", referencedColumnName="id")
      *
      * @var Status
      */
     private Status $status;
-
 
     /**
      * Конструктор программы
@@ -94,9 +96,7 @@ class Programme implements JsonSerializable
         $this->duration = $duration;
         $this->discount = $discount;
         $this->status   = $status;
-
-    }//end __construct()
-
+    }
 
     /**
      * Получить id
@@ -106,9 +106,7 @@ class Programme implements JsonSerializable
     final public function getId(): int
     {
         return $this->id;
-
-    }//end getId()
-
+    }
 
     /**
      * Получить название программы
@@ -118,9 +116,7 @@ class Programme implements JsonSerializable
     final public function getName(): string
     {
         return $this->name;
-
-    }//end getName()
-
+    }
 
     /**
      * Получить срок действия программы
@@ -130,9 +126,7 @@ class Programme implements JsonSerializable
     final public function getDuration(): string
     {
         return $this->duration;
-
-    }//end getDuration()
-
+    }
 
     /**
      * Получить скидку программы
@@ -142,19 +136,17 @@ class Programme implements JsonSerializable
     final public function getDiscount(): string
     {
         return $this->discount;
-
-    }//end getDiscount()
-
+    }
 
     /**
+     * Возвращает статус программы
+     *
      * @return Status
      */
     public function getStatus(): Status
     {
         return $this->status;
-
-    }//end getStatus()
-
+    }
 
     /**
      * Выводит описание архивируемой программы
@@ -164,9 +156,7 @@ class Programme implements JsonSerializable
     public function getArchivingMessage(): string
     {
         return "Название: {$this->getName()}. Время: {$this->getDuration()}. Уровень подготовки: {$this->getDiscount()}.";
-
-    }//end getArchivingMessage()
-
+    }
 
     /**
      * Реализация функции jsonSerialize
@@ -181,9 +171,7 @@ class Programme implements JsonSerializable
             'duration'     => $this->getDuration(),
             'discount'     => $this->getDiscount(),
         ];
-
-    }//end jsonSerialize()
-
+    }
 
     /**
      * Перенос программы в архив
@@ -197,46 +185,7 @@ class Programme implements JsonSerializable
                 "Программа с id {$this->getId()} уже находится в архиве"
             );
         }
-
         $this->status = new Status(Status::STATUS_ARCHIVE);
         return $this;
-
-    }//end moveToArchive()
-
-
-    /**
-     * Создание объекта из массива
-     *
-     * @param  array $data
-     * @return Programme
-     * @throws InvalidDataStructureException - некорректная структура файла
-     */
-    public static function createFromArray(array $data): Programme
-    {
-        $requiredFields = [
-            'id_programme',
-            'name',
-            'duration',
-            'discount',
-            'status',
-        ];
-
-        $missingFields = array_diff($requiredFields, array_keys($data));
-
-        if (count($missingFields) > 0) {
-            $errMsg = sprintf('Отсутствуют обязательные элементы: %s', implode(',', $missingFields));
-            throw new InvalidDataStructureException($errMsg);
-        }
-
-        return new static(
-            $data['id_programme'],
-            $data['name'],
-            $data['duration'],
-            $data['discount'],
-            $data['status']
-        );
-
-    }//end createFromArray()
-
-
-}//end class
+    }
+}

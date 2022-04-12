@@ -12,7 +12,6 @@ use EfTech\SportClub\Service\ArchiveProgramService\Exception\ProgramNotFoundExce
  */
 class ArchivingProgramService
 {
-
     /**
      * Репозиторий для работы с текстовыми документами
      *
@@ -20,16 +19,13 @@ class ArchivingProgramService
      */
     private ProgramRepositoryInterface $programRepository;
 
-
     /**
      * @param ProgramRepositoryInterface $programRepository
      */
     public function __construct(ProgramRepositoryInterface $programRepository)
     {
         $this->programRepository = $programRepository;
-
-    }//end __construct()
-
+    }
 
     /**
      * Архивирует программу с заданным id
@@ -39,26 +35,19 @@ class ArchivingProgramService
      */
     public function archive(int $programId): ArchivingResultDto
     {
-        $entities = $this->programRepository->findBy(['id_programme' => $programId]);
+        $entities = $this->programRepository->findBy(['id' => $programId]);
         if (1 !== count($entities)) {
             throw new ProgramNotFoundException(
                 'Не удалось отправить программу в архив. Программа с id '.$programId.' не найден'
             );
         }
-
-        /*
-            @var Programme $entity
-        */
+        /* @var Programme $entity */
         $entity = current($entities);
         $entity->moveToArchive();
-        $this->programRepository->save($entity);
         return new ArchivingResultDto(
             $entity->getId(),
             $entity->getArchivingMessage(),
             $entity->getStatus()
         );
-
-    }//end archive()
-
-
-}//end class
+    }
+}
