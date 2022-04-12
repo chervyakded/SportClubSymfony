@@ -7,45 +7,7 @@
 <h1>Admin Page</h1>
 <div>
     <h2>Добавить программу</h2>
-    <form method="POST">
-        <input type="hidden" value="program" name="type"/>
-        <div>
-            <label for="program_name">Название</label>
-            <input type="text" name="name" id="program_name" value="{{ programData.name }}"/>
-            {% if formValidationResults.name is defined %}
-                <ul>
-                    {% for err in formValidationResults.name %}
-                        <li>{{ err }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <div>
-            <label for="program_duration">Время</label>
-            <input type="text" name="duration" id="program_duration" value="{{ programData.duration }}"/>
-            {% if formValidationResults.duration is defined %}
-                <ul>
-                    {% for err in formValidationResults.duration %}
-                        <li>{{ err }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <div>
-            <label for="program_discount">Уровень подготовки</label>
-            <input type="text" name="discount" id="program_discount" value="{{ programData.discount }}"/>
-            {% if formValidationResults.discount is defined %}
-                <ul>
-                    {% for err in formValidationResults.discount %}
-                        <li>{{ err }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        </div>
-        <div>
-            <input type="submit" value="Добавить"/>
-        </div>
-    </form>
+    {{ form(form_program) }}
 </div>
 <table>
     <thead>

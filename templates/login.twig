@@ -1,16 +1,6 @@
 <h1>Аутентификация</h1>
 <div>
-    <form method="POST">
-        <div>
-            <label for="login">Логин</label>
-            <input type="text" name="login" id="login" />
-        </div>
-        <div>
-            <label for="password">Пароль</label>
-            <input type="text" name="password" id="password" />
-        </div>
-        <div><input type="submit" name="submit" id="Войти" /></div>
-    </form>
+    {{ form(form_login) }}
 </div>
 {% if errMsg is defined %}
     {{ errMsg }}

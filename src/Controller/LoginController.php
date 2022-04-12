@@ -2,7 +2,7 @@
 
 namespace EfTech\SportClub\Controller;
 
-use EfTech\SportClub\Exception\RuntimeException;
+use EfTech\SportClub\Form\LoginForm;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,11 +51,14 @@ class LoginController extends AbstractController
      */
     private function doLogin(Request $serverRequest): Response
     {
+        $formLogin = $this->createForm(LoginForm::class);
+        $formLogin->handleRequest($serverRequest);
         $response = null;
-        $context  = [];
-        if ('POST' === $serverRequest->getMethod()) {
-            $authData = $serverRequest->request->all();
-//            $this->validateAuthData($authData);
+        $context  = [
+            'form_login' => $formLogin
+        ];
+        if ($formLogin->isSubmitted() && $formLogin->isValid()) {
+            $authData = $formLogin->getData();
             if ($this->isAuth($authData['login'], $authData['password'])) {
                 $response = $serverRequest->query->has('redirect')
                     ? $this->redirect($serverRequest->query->get('redirect'))
@@ -65,7 +68,7 @@ class LoginController extends AbstractController
             }
         }
         if (null === $response) {
-            $response = $this->render('login.twig', $context);
+            $response = $this->renderForm('login.twig', $context);
         }
         return $response;
     }

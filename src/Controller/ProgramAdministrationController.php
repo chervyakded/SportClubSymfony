@@ -4,7 +4,7 @@ namespace EfTech\SportClub\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use EfTech\SportClub\Exception\RuntimeException;
-use Psr\Log\LoggerInterface;
+use EfTech\SportClub\Form\CreateProgramForm;
 use EfTech\SportClub\Service\ArrivalNewProgramService;
 use EfTech\SportClub\Service\ArrivalNewProgramService\NewProgramDto;
 use EfTech\SportClub\Service\SearchProgrammeService;
@@ -19,13 +19,6 @@ use Throwable;
  */
 class ProgramAdministrationController extends AbstractController
 {
-    /**
-     * Логгер
-     *
-     * @var LoggerInterface
-     */
-    private LoggerInterface $logger;
-
     /**
      * Сервис поиска текстовых документов
      *
@@ -47,21 +40,18 @@ class ProgramAdministrationController extends AbstractController
     private EntityManagerInterface $em;
 
     /**
-     * @param LoggerInterface          $logger                   - логгер
      * @param SearchProgrammeService   $searchProgrammeService   - сервис поиска текстовых документов
      * @param ArrivalNewProgramService $arrivalNewProgramService - сервис регистрации программ
      * @param EntityManagerInterface   $em                       - соединение с БД
      */
     public function __construct(
-        LoggerInterface          $logger,
         SearchProgrammeService   $searchProgrammeService,
         ArrivalNewProgramService $arrivalNewProgramService,
         EntityManagerInterface   $em
     ) {
-        $this->logger                   = $logger;
         $this->searchProgrammeService   = $searchProgrammeService;
         $this->arrivalNewProgramService = $arrivalNewProgramService;
-        $this->em = $em;
+        $this->em                       = $em;
     }
 
     /**
@@ -70,52 +60,20 @@ class ProgramAdministrationController extends AbstractController
      */
     public function __invoke(Request $serverRequest): Response
     {
-        try {
-//            if (false === $this->httpAuthProvider->isAuth()) {
-//                return $this->httpAuthProvider->doAuth($serverRequest->getUri());
-//            }
-            $this->logger->info('Запущен ProgramAdministrationController::__invoke');
-            $resultCreatingPrograms = [];
-            if ('POST' === $serverRequest->getMethod()) {
-                $resultCreatingPrograms = $this->creatingOfProgram($serverRequest);
-            }
-            $dtoProgramsCollection = $this->searchProgrammeService->search((new SearchProgrammeCriteria()));
-            $viewData              = ['programs' => $dtoProgramsCollection];
-            $context               = array_merge($viewData, $resultCreatingPrograms);
-            $template              = 'program.administration.twig';
-            $httpCode              = 200;
-        } catch (Throwable $e) {
-            $httpCode = 500;
-            $template = 'errors.twig';
-            $context  = [
-                'errors' => [$e->getMessage()],
-                'code'   => $httpCode,
-            ];
+        $formProgram = $this->createForm(CreateProgramForm::class);
+        $formProgram->handleRequest($serverRequest);
+        if ($formProgram->isSubmitted() && $formProgram->isValid()) {
+            $this->create($formProgram->getData());
+            $formProgram = $this->createForm(CreateProgramForm::class);
         }
-        $response = $this->render(
-            $template,
-            $context
-        );
-        return $response;
-    }
-
-    /**
-     * Результат создания программ
-     *
-     * @param  Request $serverRequest
-     * @return array
-     */
-    private function creatingOfProgram(Request $serverRequest): array
-    {
-        $dataToCreate = [];
-        parse_str($serverRequest->getContent(), $dataToCreate);
-        $result['program'] = $this->validateProgram($dataToCreate);
-        if (0 === count($result['program'])) {
-            $this->create($dataToCreate);
-        } else {
-            $result['programData'] = $dataToCreate;
-        }
-        return $result;
+        $template = 'program.administration.twig';
+        $context = [
+            'form_program' => $formProgram,
+            'programmes' => $this->searchProgrammeService->search(
+                new SearchProgrammeCriteria()
+            )
+        ];
+            return $this->renderForm($template, $context);
     }
 
     /**
@@ -237,9 +195,9 @@ class ProgramAdministrationController extends AbstractController
             $this->em->beginTransaction();
             $this->arrivalNewProgramService->registerProgram(
                 new NewProgramDto(
-                    (string) $dataToCreate['name'],
-                    (string) $dataToCreate['duration'],
-                    (string) $dataToCreate['discount'],
+                    $dataToCreate['name'],
+                    $dataToCreate['duration'],
+                    $dataToCreate['discount'],
                 )
             );
             $this->em->flush();
